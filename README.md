@@ -12,3 +12,10 @@ curl -X POST http://localhost:8080/submit \
     "date": "2025-07-04",
     "install_status": "success"
   }'
+
+SystemD File Details:
+
+WorkingDirectory: Set this to the directory you want the server to serve (like /var/www/html or your project folder).
+ExecStart: Launches Python’s built-in HTTP server on port 8000.
+ExecStop: Sends a SIGTERM to the process to stop it cleanly.
+Restart=on-failure: Restarts the server if it crashes (optional).
