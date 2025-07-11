@@ -1,0 +1,15 @@
+[Unit]
+Description=MQ Automation Report Writer
+After=network.target
+
+[Service]
+Type=simple
+User=mqm
+Group=mqm
+WorkingDirectory=/home/mqm/www
+ExecStart=/usr/bin/python3 -m http.server 8000
+ExecStop=/bin/kill -s SIGTERM $MAINPID
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
