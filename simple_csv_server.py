@@ -42,6 +42,7 @@ class CSVRequestHandler(http.server.BaseHTTPRequestHandler):
         mq_version = data.get("mq_version", "").strip()
         date_str = data.get("date", "").strip()
         install_status = data.get("install_status", "").strip().lower()
+        conn_test_status = data.get("conn_test_status", "").strip().lower()
 
         if not re.match(r"^[a-zA-Z0-9._-]{1,253}$", hostname):
             return self.send_json_error("Invalid hostname")
@@ -50,17 +51,26 @@ class CSVRequestHandler(http.server.BaseHTTPRequestHandler):
         if not re.match(r"^\d+\.\d+\.\d+(?:\.\d+)?$", mq_version):
             return self.send_json_error("Invalid MQ version format")
         try:
-            datetime.strptime(date_str, "%Y-%m-%d")
+            datetime.strptime(date_str, "%Y-%m-%d-%H:%M")
         except ValueError:
-            return self.send_json_error("Invalid date format")
+            return self.send_json_error("Invalid date format. Expected YYYY-MM-DD-HH:MM")
         if install_status not in {"success", "failed"}:
             return self.send_json_error("Invalid install status")
+        if conn_test_status not in {"success", "failed"}:
+            return self.send_json_error("Invalid connection test status")
 
         # Write to CSV
         try:
             with open(CSV_FILE_PATH, 'a', newline='', encoding='utf-8') as f:
                 writer = csv.writer(f)
-                writer.writerow([hostname, mq_install_type, mq_version, date_str, install_status])
+                writer.writerow([
+                    hostname,
+                    mq_install_type,
+                    mq_version,
+                    date_str,
+                    install_status,
+                    conn_test_status
+                ])
         except Exception as e:
             return self.send_json_error(f"Failed to write to CSV: {str(e)}", status=500)
 
@@ -78,6 +88,7 @@ class CSVRequestHandler(http.server.BaseHTTPRequestHandler):
 
 if __name__ == "__main__":
     PORT = 8080
-    server = http.server.HTTPServer(('0.0.0.0', PORT), CSVRequestHandler)
-    print(f"Server running on http://localhost:{PORT}")
+    IP = 0.0.0.0
+    server = http.server.HTTPServer((IP, PORT), CSVRequestHandler)
+    print(f"Server running on http://{IP}:{PORT}")
     server.serve_forever()
