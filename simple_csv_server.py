@@ -47,7 +47,7 @@ class CSVRequestHandler(http.server.BaseHTTPRequestHandler):
             return self.send_json_error("Invalid hostname")
         if mq_install_type not in {"client", "server"}:
             return self.send_json_error("Invalid install type")
-        if not re.match(r"^\d+\.\d+(\.\d+)?$", mq_version):
+        if not re.match(r"^\d+\.\d+\.\d+(?:\.\d+)?$", mq_version):
             return self.send_json_error("Invalid MQ version format")
         try:
             datetime.strptime(date_str, "%Y-%m-%d")
